@@ -20,4 +20,5 @@ UTILS_CONFIG = {
     "browser": os.environ['BROWSER'],
     "trace": os.environ['TRACE'],
     "base_url_api": os.environ['BASE_URL'],
+    "report_path": "reports"
 }
