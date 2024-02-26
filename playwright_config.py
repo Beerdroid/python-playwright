@@ -28,6 +28,6 @@ UTILS_CONFIG = {
     "expect_timeout": 10000,
     "browser": os.environ['BROWSER'],
     "trace": os.environ['TRACE'],
-    "base_url_api": os.environ['BASE_URL'],
+    "base_url_api": os.environ['BASE_URL_API'],
     "report_path": "reports"
 }
