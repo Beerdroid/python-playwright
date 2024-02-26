@@ -2,7 +2,16 @@ import os
 
 from dotenv import load_dotenv
 
-load_dotenv()
+
+def load_env():
+    env = os.environ.get("ENV")
+    if env:
+        load_dotenv(f".env.{env}")
+    else:
+        load_dotenv(".env")
+
+
+load_env()
 
 CONTEXT_CONFIG = {
     "base_url": os.environ['BASE_URL'],

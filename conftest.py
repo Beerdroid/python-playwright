@@ -8,8 +8,6 @@ from playwright.sync_api import Page, sync_playwright, expect
 from playwright_config import *
 from src.pages.app import App
 
-load_dotenv()
-
 # custom timeout for assertions
 expect.set_options(timeout=UTILS_CONFIG.get('expect_timeout'))
 
