@@ -24,12 +24,22 @@ def get_browser(get_playwright, browser):
             raise ValueError(f"Unsupported browser: {browser}")
 
 
-@fixture(scope="function")
-def new_page(get_playwright, request) -> Page:
-    browser = get_browser(get_playwright, UTILS_CONFIG.get("browser")).launch(
+@fixture(scope="session")
+def get_playwright():
+    with sync_playwright() as playwright:
+        yield playwright
+
+
+@fixture(scope="session")
+def new_browser(get_playwright):
+    yield get_browser(get_playwright, UTILS_CONFIG.get("browser")).launch(
         **BROWSER_CONFIG
     )
-    context = browser.new_context(**CONTEXT_CONFIG)
+
+
+@fixture(scope="function")
+def new_page(new_browser, request) -> Page:
+    context = new_browser.new_context(**CONTEXT_CONFIG)
 
     trace = UTILS_CONFIG.get("trace")
     if trace in ["retain-on-failure", "on"]:
@@ -57,12 +67,6 @@ def new_request_context(get_playwright):
     )
     yield request_context
     request_context.dispose()
-
-
-@fixture(scope="session")
-def get_playwright():
-    with sync_playwright() as playwright:
-        yield playwright
 
 
 @fixture(scope="function")
