@@ -70,8 +70,8 @@ def new_request_context(get_playwright):
 
 
 @fixture(scope="function")
-def app(new_page, new_request_context):
-    yield App(new_page, new_request_context)
+def app(new_page, new_request_context, assert_snapshot):
+    yield App(new_page, new_request_context, assert_snapshot)
 
 
 @pytest.hookimpl(tryfirst=True)

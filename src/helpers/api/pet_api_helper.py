@@ -1,6 +1,6 @@
 from playwright.sync_api import APIRequestContext
 
-from src.helpers.base_api_helper import BaseApiHelper
+from src.helpers.api.base_api_helper import BaseApiHelper
 
 
 class PetApiHelper(BaseApiHelper):

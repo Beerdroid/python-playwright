@@ -9,3 +9,4 @@ pytest-rerunfailures~=13.0
 pytest-timeout~=2.2.0
 pytest-xdist~=3.5.0
 python-dotenv~=1.0.1
+pytest-playwright-visual~=2.1.2

@@ -9,6 +9,9 @@ class TestUiSuite:
     @pytest.mark.smoke
     def test_ui(self, app):
         app.login_page.goto()
+
+        app.snapshot_helper.assert_snapshot()
+
         app.login_page.fill_credentials(
             os.environ["USER_LOGIN"], os.environ["PASSWORD"]
         )
