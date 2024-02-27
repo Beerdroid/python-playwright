@@ -18,9 +18,10 @@ CONTEXT_CONFIG = {
     "viewport": {"width": 1920, "height": 1080},
     "locale": "de-DE",
     "timezone_id": "Europe/Berlin",
+    "storage_state": "state.json"
 }
 
-BROWSER_CONFIG = {"headless": True}
+BROWSER_CONFIG = {"headless": False, "slow_mo": 0.0}
 
 UTILS_CONFIG = {
     "expect_timeout": 10000,

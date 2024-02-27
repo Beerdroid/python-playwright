@@ -1,3 +1,5 @@
+import os
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -7,12 +9,13 @@ from playwright.sync_api import Page, sync_playwright, expect
 
 from playwright_config import CONTEXT_CONFIG, BROWSER_CONFIG, UTILS_CONFIG
 from src.pages.app import App
+from src.pages.login_page import LoginPage
 
 # custom timeout for assertions
 expect.set_options(timeout=UTILS_CONFIG.get("expect_timeout"))
 
 
-def get_browser(get_playwright, browser):
+def get_driver(get_playwright, browser):
     match browser:
         case "chromium":
             return get_playwright.chromium
@@ -31,15 +34,35 @@ def get_playwright():
 
 
 @fixture(scope="session")
-def new_browser(get_playwright):
-    yield get_browser(get_playwright, UTILS_CONFIG.get("browser")).launch(
-        **BROWSER_CONFIG
-    )
+def get_browser(get_playwright):
+    browser = get_driver(get_playwright, UTILS_CONFIG.get("browser")).launch(
+        **BROWSER_CONFIG)
+
+    yield browser
+    browser.close()
+
+
+@fixture(scope="session")
+def get_storage_state(get_browser):
+    context = get_browser.new_context(base_url=CONTEXT_CONFIG.get("base_url"))
+
+    page = context.new_page()
+    page.goto('/')
+
+    login = LoginPage(page)
+    login.fill_credentials(os.getenv("USER_LOGIN"), os.getenv("PASSWORD"))
+    login.submit_login()
+    time.sleep(3)
+
+    context.storage_state(path=CONTEXT_CONFIG.get("storage_state"))
+    yield context
+
+    context.close()
 
 
 @fixture(scope="function")
-def new_page(new_browser, request) -> Page:
-    context = new_browser.new_context(**CONTEXT_CONFIG)
+def get_page(get_browser, get_storage_state, request) -> Page:
+    context = get_browser.new_context(**CONTEXT_CONFIG)
 
     trace = UTILS_CONFIG.get("trace")
     if trace in ["retain-on-failure", "on"]:
@@ -61,7 +84,7 @@ def new_page(new_browser, request) -> Page:
 
 
 @fixture(scope="function")
-def new_request_context(get_playwright):
+def get_request_context(get_playwright):
     request_context = get_playwright.request.new_context(
         base_url=UTILS_CONFIG.get("base_url_api")
     )
@@ -70,8 +93,8 @@ def new_request_context(get_playwright):
 
 
 @fixture(scope="function")
-def app(new_page, new_request_context, assert_snapshot):
-    yield App(new_page, new_request_context, assert_snapshot)
+def app(get_page, get_request_context, assert_snapshot):
+    yield App(get_page, get_request_context, assert_snapshot)
 
 
 @pytest.hookimpl(tryfirst=True)
