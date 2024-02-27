@@ -11,7 +11,7 @@ class LoginPage(BasePage):
         self.login_button = page.locator('[data-test="login-button"]')
 
     def goto(self):
-        self.page.goto('/')
+        self.page.goto("/")
 
     def fill_credentials(self, login, password):
         self.login_input.fill(login)
