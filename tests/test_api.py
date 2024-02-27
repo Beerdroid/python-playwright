@@ -3,8 +3,23 @@ from functools import reduce
 import pytest
 
 
+@pytest.fixture(scope="module", autouse=True)
+def setup_database():
+    print("Setup database new")  # Setup before all tests execution phase
+    yield  # All tests execution phase
+    print("Teardown database new")  # Teardown after all tests execution phase
+
+
+@pytest.fixture(autouse=True)
+def setup_teardown_each():
+    print("Setup before each")  # Setup before each test execution phase
+    yield  # Test execution phase
+    print("Teardown after each")  # Teardown after each test execution phase
+
+
 @pytest.mark.api
 class TestApiSuite:
+
     def test_create_pet_via_api(self, app):
         payload = {
             "id": 0,
