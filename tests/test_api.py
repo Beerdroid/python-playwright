@@ -3,7 +3,7 @@ from functools import reduce
 import pytest
 
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="class", autouse=True)
 def setup_database():
     print("Setup database new")  # Setup before all tests execution phase
     yield  # All tests execution phase
