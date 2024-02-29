@@ -6,9 +6,11 @@ from pathlib import Path
 import pytest
 from _pytest.fixtures import fixture
 from playwright.sync_api import Page, sync_playwright, expect
+from pytest_playwright_visual.plugin import assert_snapshot
 
 from playwright_config import CONTEXT_CONFIG, BROWSER_CONFIG, UTILS_CONFIG
-from src.pages.app import App
+from src.helpers.api.api import Api
+from src.pages.ui import Ui
 from src.pages.login_page import LoginPage
 
 # custom timeout for assertions
@@ -93,8 +95,13 @@ def get_request_context(get_playwright):
 
 
 @fixture(scope="function")
-def app(get_page, get_request_context, assert_snapshot):
-    yield App(get_page, get_request_context, assert_snapshot)
+def ui(get_page, assert_snapshot):
+    yield Ui(get_page, assert_snapshot)
+
+
+@fixture(scope="function")
+def api(get_request_context):
+    yield Api(get_request_context)
 
 
 @pytest.hookimpl(tryfirst=True)

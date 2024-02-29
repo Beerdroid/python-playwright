@@ -5,9 +5,9 @@ import pytest
 
 @pytest.fixture(scope="class", autouse=True)
 def setup_database():
-    print("Setup database new")  # Setup before all tests execution phase
+    print("Setup before all")  # Setup before all tests execution phase
     yield  # All tests execution phase
-    print("Teardown database new")  # Teardown after all tests execution phase
+    print("Teardown after all")  # Teardown after all tests execution phase
 
 
 @pytest.fixture(autouse=True)
@@ -20,7 +20,7 @@ def setup_teardown_each():
 @pytest.mark.api
 class TestApiSuite:
 
-    def test_create_pet_via_api(self, app):
+    def test_create_pet_via_api(self, api):
         payload = {
             "id": 0,
             "category": {"id": 0, "name": "string"},
@@ -30,15 +30,15 @@ class TestApiSuite:
             "status": "available",
         }
 
-        response = app.pet_api_helper.create_pet(payload)
+        response = api.petApiHelper.create_pet(payload)
         assert response.ok
 
         json = response.json()
         assert json["name"] == payload["name"]
         assert json["category"]["id"] == 0
 
-    def test_getting_pet_via_api(self, app):
-        response = app.pet_api_helper.get_pet(9223372036854288753)
+    def test_getting_pet_via_api(self, api):
+        response = api.petApiHelper.get_pet(9223372036854288753)
         assert response.ok
 
     @pytest.mark.parametrize("value,expected", [(1, 2), (2, 4), (3, 6)])
