@@ -54,13 +54,13 @@ def create_storage_states(get_browser):
 
         login = LoginPage(page)
         login.goto()
-        login.fill_credentials(os.getenv(Login[role.value].value), os.getenv("PASSWORD"))
+        login.fill_credentials(os.getenv(Login[role]), os.getenv("PASSWORD"))
         login.submit_login()
         time.sleep(3)
 
         if not os.path.exists(state_dir):
             os.makedirs(state_dir)
-        file_path = os.path.join(state_dir, State[role.value].value)
+        file_path = os.path.join(state_dir, State[role])
         context.storage_state(path=file_path)
 
         context.close()
@@ -68,7 +68,7 @@ def create_storage_states(get_browser):
 
 @fixture(scope="function")
 def get_page(get_browser, request):
-    file_path = os.path.join(state_dir, State[Role.MAIN_USER.value].value)
+    file_path = os.path.join(state_dir, State[Role.MAIN_USER])
     context = get_browser.new_context(**CONTEXT_CONFIG, storage_state=file_path)
 
     trace = UTILS_CONFIG.get("trace")
@@ -115,7 +115,7 @@ def ui_factory(get_browser, request):
     trace = UTILS_CONFIG.get("trace")
 
     def _ui_factory(role: Role):
-        file_path = os.path.join(UTILS_CONFIG["state_dir"], State[role.value].value)
+        file_path = os.path.join(UTILS_CONFIG["state_dir"], State[role])
         contextInstance = get_browser.new_context(**CONTEXT_CONFIG, storage_state=file_path)
 
         if trace in ["retain-on-failure", "on"]:
@@ -124,7 +124,7 @@ def ui_factory(get_browser, request):
         page = contextInstance.new_page()
         ui_instance = Ui(page)
 
-        contexts[role.value] = contextInstance
+        contexts[role] = contextInstance
         return ui_instance
 
     yield _ui_factory
