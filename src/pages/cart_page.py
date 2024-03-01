@@ -2,10 +2,12 @@ import allure
 from playwright.sync_api import Page, expect
 
 from src.models.checkoutInfo import CheckoutInfo
+from src.pages.base_page import BasePage
 
 
-class CartPage:
+class CartPage(BasePage):
     def __init__(self, page: Page):
+        super().__init__(page)
         self.page = page
         self.checkout_button = page.get_by_role("button", name="Checkout")
         self.continue_button = page.get_by_role("button", name="Continue")

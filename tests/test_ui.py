@@ -4,6 +4,7 @@ import allure
 import pytest
 from playwright.sync_api import expect
 
+from conftest import Role
 from src.models.checkoutInfo import CheckoutInfo
 
 
@@ -12,27 +13,32 @@ from src.models.checkoutInfo import CheckoutInfo
 class TestUiSuite:
 
     @pytest.mark.smoke
-    def test_ui_1(self, ui):
+    def test_ui_1(self, ui, assert_snapshot):
         ui.inventory_page.goto()
-        ui.snapshot_helper.assert_snapshot()
+        assert_snapshot(ui.inventory_page.screenshot())
 
-    @allure.title("Should complete an order successfully")
+    @allure.title("Should use 2 users in a scenario")
     @pytest.mark.smoke
-    def test_ui_cart(self, ui):
+    def test_ui_cart(self, ui_factory):
         checkout_info = CheckoutInfo(
             first_name="John",
             last_name="Doe",
             zip_postal="5555"
         )
 
-        ui.inventory_page.goto()
-        ui.inventory_page.add_item_to_cart("Sauce Labs Backpack")
-        ui.cart_page.goto()
-        ui.cart_page.checkout()
-        ui.cart_page.fill_checkout_info(checkout_info)
-        ui.cart_page.continue_checkout()
-        ui.cart_page.finish_checkout()
-        ui.cart_page.assert_order_completed()
+        mainUser = ui_factory(Role.MAIN_USER)
+        mainUser.inventory_page.goto()
+        mainUser.inventory_page.add_item_to_cart("Sauce Labs Backpack")
+        mainUser.cart_page.goto()
+        mainUser.cart_page.checkout()
+        mainUser.cart_page.fill_checkout_info(checkout_info)
+        mainUser.cart_page.continue_checkout()
+        mainUser.cart_page.finish_checkout()
+        mainUser.cart_page.assert_order_completed()
+
+        problemUser = ui_factory(Role.PROBLEM_USER)
+        problemUser.inventory_page.goto()
+        problemUser.inventory_page.add_item_to_cart("Wrong item")
 
     @pytest.mark.skip(reason="skip mark")
     def test_ui_2(self, ui):

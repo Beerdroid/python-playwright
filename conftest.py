@@ -5,16 +5,17 @@ from pathlib import Path
 
 import pytest
 from _pytest.fixtures import fixture
-from playwright.sync_api import Page, sync_playwright, expect
-from pytest_playwright_visual.plugin import assert_snapshot
+from playwright.sync_api import sync_playwright, expect
 
 from playwright_config import CONTEXT_CONFIG, BROWSER_CONFIG, UTILS_CONFIG
 from src.helpers.api.api import Api
-from src.pages.ui import Ui
+from src.models.state import State, Role, Login
 from src.pages.login_page import LoginPage
+from src.pages.ui import Ui
 
 # custom timeout for assertions
 expect.set_options(timeout=UTILS_CONFIG.get("expect_timeout"))
+state_dir = UTILS_CONFIG["state_dir"]
 
 
 def get_driver(get_playwright, browser):
@@ -44,27 +45,31 @@ def get_browser(get_playwright):
     browser.close()
 
 
-@fixture(scope="session")
-def get_storage_state(get_browser):
-    context = get_browser.new_context(base_url=CONTEXT_CONFIG.get("base_url"))
+@fixture(scope="session", autouse=True)
+def create_storage_states(get_browser):
+    for role in Role:
+        context = get_browser.new_context(base_url=CONTEXT_CONFIG.get("base_url"))
 
-    page = context.new_page()
-    page.goto('/')
+        page = context.new_page()
 
-    login = LoginPage(page)
-    login.fill_credentials(os.getenv("USER_LOGIN"), os.getenv("PASSWORD"))
-    login.submit_login()
-    time.sleep(3)
+        login = LoginPage(page)
+        login.goto()
+        login.fill_credentials(os.getenv(Login[role.value].value), os.getenv("PASSWORD"))
+        login.submit_login()
+        time.sleep(3)
 
-    context.storage_state(path=CONTEXT_CONFIG.get("storage_state"))
-    yield context
+        if not os.path.exists(state_dir):
+            os.makedirs(state_dir)
+        file_path = os.path.join(state_dir, State[role.value].value)
+        context.storage_state(path=file_path)
 
-    context.close()
+        context.close()
 
 
 @fixture(scope="function")
-def get_page(get_browser, get_storage_state, request) -> Page:
-    context = get_browser.new_context(**CONTEXT_CONFIG)
+def get_page(get_browser, request):
+    file_path = os.path.join(state_dir, State[Role.MAIN_USER.value].value)
+    context = get_browser.new_context(**CONTEXT_CONFIG, storage_state=file_path)
 
     trace = UTILS_CONFIG.get("trace")
     if trace in ["retain-on-failure", "on"]:
@@ -95,13 +100,46 @@ def get_request_context(get_playwright):
 
 
 @fixture(scope="function")
-def ui(get_page, assert_snapshot):
-    yield Ui(get_page, assert_snapshot)
+def ui(get_page):
+    yield Ui(get_page)
 
 
 @fixture(scope="function")
 def api(get_request_context):
     yield Api(get_request_context)
+
+
+@pytest.fixture
+def ui_factory(get_browser, request):
+    contexts = {}
+    trace = UTILS_CONFIG.get("trace")
+
+    def _ui_factory(role: Role):
+        file_path = os.path.join(UTILS_CONFIG["state_dir"], State[role.value].value)
+        contextInstance = get_browser.new_context(**CONTEXT_CONFIG, storage_state=file_path)
+
+        if trace in ["retain-on-failure", "on"]:
+            contextInstance.tracing.start(screenshots=True, snapshots=True)
+
+        page = contextInstance.new_page()
+        ui_instance = Ui(page)
+
+        contexts[role.value] = contextInstance
+        return ui_instance
+
+    yield _ui_factory
+
+    for roleValue, context in contexts.items():
+        now = datetime.now()
+        formatted_date_time = now.strftime("%Y_%m_%d-%H_%M")
+        trace_name = f"./trace/run_{formatted_date_time}/trace_{request.node.name}_{roleValue}.zip"
+
+        if trace == "retain-on-failure" and request.node.rep_call.failed:
+            context.tracing.stop(path=trace_name)
+        elif trace == "on":
+            context.tracing.stop(path=trace_name)
+
+        context.close()
 
 
 @pytest.hookimpl(tryfirst=True)

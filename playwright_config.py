@@ -18,7 +18,6 @@ CONTEXT_CONFIG = {
     "viewport": {"width": 1920, "height": 1080},
     "locale": "de-DE",
     "timezone_id": "Europe/Berlin",
-    "storage_state": "state.json"
 }
 
 BROWSER_CONFIG = {"headless": False, "slow_mo": 0.0}
@@ -29,4 +28,5 @@ UTILS_CONFIG = {
     "trace": os.environ["TRACE"],
     "base_url_api": os.environ["BASE_URL_API"],
     "report_path": "reports",
+    "state_dir": "states"
 }

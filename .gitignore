@@ -2,7 +2,7 @@
 /trace/
 /reports/
 /logs/
-/state.json
 /tests/snapshot_tests_failures/
 /venv/
 /allure-report/
+/states/
