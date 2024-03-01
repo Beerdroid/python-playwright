@@ -1,5 +1,6 @@
 from functools import reduce
 
+import allure
 import pytest
 
 
@@ -17,9 +18,10 @@ def setup_teardown_each():
     print("Teardown after each")  # Teardown after each test execution phase
 
 
+@allure.suite("API smoke suite")
 @pytest.mark.api
 class TestApiSuite:
-
+    @allure.title("Should create a pet via API")
     def test_create_pet_via_api(self, api):
         payload = {
             "id": 0,

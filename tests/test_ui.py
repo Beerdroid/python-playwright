@@ -1,18 +1,22 @@
 import os
 
+import allure
 import pytest
 from playwright.sync_api import expect
 
 from src.models.checkoutInfo import CheckoutInfo
 
 
+@allure.suite("UI smoke suite")
 @pytest.mark.ui
 class TestUiSuite:
+
     @pytest.mark.smoke
     def test_ui_1(self, ui):
         ui.inventory_page.goto()
         ui.snapshot_helper.assert_snapshot()
 
+    @allure.title("Should complete an order successfully")
     @pytest.mark.smoke
     def test_ui_cart(self, ui):
         checkout_info = CheckoutInfo(

@@ -8,3 +8,4 @@ pytest-rerunfailures
 pytest-timeout
 pytest-xdist
 pytest-playwright-visual
+allure-pytest
