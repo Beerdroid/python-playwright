@@ -4,7 +4,7 @@ import allure
 import pytest
 from playwright.sync_api import expect
 
-from conftest import Role
+from conftest import User
 from src.models.checkoutInfo import CheckoutInfo
 
 
@@ -19,14 +19,14 @@ class TestUiSuite:
 
     @allure.title("Should use 2 users in a scenario")
     @pytest.mark.smoke
-    def test_ui_cart(self, ui_factory):
+    def test_ui_cart(self, ui_factory, assert_snapshot):
         checkout_info = CheckoutInfo(
             first_name="John",
             last_name="Doe",
             zip_postal="5555"
         )
 
-        mainUser = ui_factory(Role.MAIN_USER)
+        mainUser = ui_factory(User.MAIN_USER)
         mainUser.inventory_page.goto()
         mainUser.inventory_page.add_item_to_cart("Sauce Labs Backpack")
         mainUser.cart_page.goto()
@@ -36,9 +36,9 @@ class TestUiSuite:
         mainUser.cart_page.finish_checkout()
         mainUser.cart_page.assert_order_completed()
 
-        problemUser = ui_factory(Role.PROBLEM_USER)
+        problemUser = ui_factory(User.PROBLEM_USER)
         problemUser.inventory_page.goto()
-        problemUser.inventory_page.add_item_to_cart("Wrong item")
+        assert_snapshot(problemUser.inventory_page.screenshot())
 
     @pytest.mark.skip(reason="skip mark")
     def test_ui_2(self, ui):

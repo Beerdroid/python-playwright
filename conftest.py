@@ -9,7 +9,7 @@ from playwright.sync_api import sync_playwright, expect
 
 from playwright_config import CONTEXT_CONFIG, BROWSER_CONFIG, UTILS_CONFIG
 from src.helpers.api.api import Api
-from src.models.state import State, Role, Login
+from src.models.state import State, User, Login
 from src.pages.login_page import LoginPage
 from src.pages.ui import Ui
 
@@ -47,20 +47,20 @@ def get_browser(get_playwright):
 
 @fixture(scope="session", autouse=True)
 def create_storage_states(get_browser):
-    for role in Role:
+    for user in User:
         context = get_browser.new_context(base_url=CONTEXT_CONFIG.get("base_url"))
 
         page = context.new_page()
 
         login = LoginPage(page)
         login.goto()
-        login.fill_credentials(os.getenv(Login[role]), os.getenv("PASSWORD"))
+        login.fill_credentials(os.getenv(Login[user]), os.getenv("PASSWORD"))
         login.submit_login()
         time.sleep(3)
 
         if not os.path.exists(state_dir):
             os.makedirs(state_dir)
-        file_path = os.path.join(state_dir, State[role])
+        file_path = os.path.join(state_dir, State[user])
         context.storage_state(path=file_path)
 
         context.close()
@@ -68,7 +68,7 @@ def create_storage_states(get_browser):
 
 @fixture(scope="function")
 def get_page(get_browser, request):
-    file_path = os.path.join(state_dir, State[Role.MAIN_USER])
+    file_path = os.path.join(state_dir, State[User.MAIN_USER])
     context = get_browser.new_context(**CONTEXT_CONFIG, storage_state=file_path)
 
     trace = UTILS_CONFIG.get("trace")
@@ -114,8 +114,8 @@ def ui_factory(get_browser, request):
     contexts = {}
     trace = UTILS_CONFIG.get("trace")
 
-    def _ui_factory(role: Role):
-        file_path = os.path.join(UTILS_CONFIG["state_dir"], State[role])
+    def _ui_factory(user: User):
+        file_path = os.path.join(UTILS_CONFIG["state_dir"], State[user])
         contextInstance = get_browser.new_context(**CONTEXT_CONFIG, storage_state=file_path)
 
         if trace in ["retain-on-failure", "on"]:
@@ -124,15 +124,15 @@ def ui_factory(get_browser, request):
         page = contextInstance.new_page()
         ui_instance = Ui(page)
 
-        contexts[role] = contextInstance
+        contexts[user] = contextInstance
         return ui_instance
 
     yield _ui_factory
 
-    for roleValue, context in contexts.items():
+    for userValue, context in contexts.items():
         now = datetime.now()
         formatted_date_time = now.strftime("%Y_%m_%d-%H_%M")
-        trace_name = f"./trace/run_{formatted_date_time}/trace_{request.node.name}_{roleValue}.zip"
+        trace_name = f"./trace/run_{formatted_date_time}/trace_{request.node.name}_{userValue}.zip"
 
         if trace == "retain-on-failure" and request.node.rep_call.failed:
             context.tracing.stop(path=trace_name)

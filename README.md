@@ -29,6 +29,10 @@ An example of an automation project with Web UI and Rest API tests
 Install dependencies:
 
 ```bash
+pip install virtualenv
+virtualenv venv
+source venv/bin/activate
+
 pip install -r requirements.txt
 ```
 
@@ -43,7 +47,8 @@ pytest
 pytest -m ui
 pytest -m api
 ```
-Refer to reports/{date}/report_{time}.html for an automatically generated simple report
+Refer to reports directory for an automatically generated simple report
+Refer to trace directory for trace files
 
 Execute the command to generate an additional Allure report:
 
